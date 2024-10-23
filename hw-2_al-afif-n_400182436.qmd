@@ -1,0 +1,70 @@
+---
+title: "KINESIOL 736 -- Assignment 2"
+author: "Nour Al Afif"
+format: pdf
+---
+### Part B
+#### 1. Reading in the file
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+lotr_data <- read_csv("lord-of-the-rings-trilogy.csv")
+```
+###### 2. List all the ways this dataset is not tidy.
+- There isn't consistent naming conventions, with some of the races/sexes being capitalized in some instances but not the others.
+- Each variable doesn't have its own column and each row doesn't have its own observation.
+
+###### 3. How many columns and rows would you have if this dataset was tidy?
+The dataset would have 3 columns and 18 rows, because there are 3 movies x 3 races x 2 sexes
+
+###### 4. What would the column names be in tidy format?
+The column names would be: movie, sex, race, word_count
+
+### Part B
+##### 1. Tidying the dataset
+```{r}
+#| message: false
+lotr_tidy <- lotr_data |>
+  pivot_longer(elf_female:Man_male,
+               names_to = "race_sex",
+               values_to = "word_count")|>
+  mutate(race_sex = tolower(race_sex))|>
+  tidyr::separate(race_sex, into = c("race", "sex"), convert = TRUE)
+```
+
+##### 2. What is the total number of words spoken by:
+a) male hobbits
+```{r}
+#| message: false
+lotr_tidy |> group_by(race, sex)|>
+  filter(sex == "male", race == "hobbit")|>
+  summarize(word_count = sum(word_count))
+```
+b) female elves
+```{r}
+#| message: false
+lotr_tidy |> group_by(race, sex)|>
+  filter(sex == "female", race == "elf")|>
+  summarize(word_count = sum(word_count))
+```
+c) male elves
+```{r}
+#| message: false
+lotr_tidy |> group_by(race, sex)|>
+  filter(sex == "male", race == "elf")|>
+  summarize(word_count = sum(word_count))
+```
+
+##### 3. Is the number of spoken words in a movie dominated by a single race?
+```{r}
+lotr_tidy |> group_by(movie, race)|>
+  summarize(word_count = sum(word_count))|>
+  filter(word_count == max(word_count))|>
+  ungroup()
+```
+Yes, man is dominant in the return of the king and two towers while hobbits are dominant in the fellowship of the ring.
+
+##### 4. Does the dominant race depend on the movie?
+Yes it does, the fellowship of the ring has most words spoken by hobbits while the other two movies are dominated by man.
+
